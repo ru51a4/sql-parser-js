@@ -44,6 +44,7 @@ ORDER BY gg.kek desc</textarea>
     let main = document.querySelector('.main');
     let mainfn = () => {
         let obj = getObject(`( ${sql.value} )`);
+        console.log({ obj })
         let getHtml = (obj, init = false) => {
             let html = "<br>";
 
@@ -75,6 +76,7 @@ ORDER BY gg.kek desc</textarea>
 
             html += (!obj.sortColumns.length) ? '' : `<span class="operator"><br>ORDER BY</span>`;
             html += obj.sortColumns.reduce((acc, c) => acc + `<span> ${c.col}</span> <span>${c.type}</span>`, '');
+            html += obj.limit.reduce((acc, c) => acc + `<span> ${c.type.toUpperCase()}</span> <span>${c.col}</span>`, '');
 
 
             if (!init) {

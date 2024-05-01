@@ -5,7 +5,7 @@ class Query {
     whereClauses = [];
     groupByColumns = [];
     sortColumns = [];
-    //limit;
+    limit = []
     static build = (input) => {
         input = input.split("\n").join(" ").trim().split(" ").map((s) => s.toUpperCase().split(",").join(""));
 
@@ -17,6 +17,7 @@ class Query {
             let isWhere = false;
             let isGroup = false;
             let isOrder = false;
+            let isLimit = false;
             while (str.length) {
                 let token = str.shift();
                 if (token === 'SELECT') {
@@ -56,6 +57,15 @@ class Query {
                     str.shift();
                     continue
                 }
+                if (token === 'LIMIT') {
+                    isFromSources = false;
+                    isJoin = false;
+                    isWhere = false;
+                    isGroup = false;
+                    isOrder = false;
+                    isLimit = true;
+                    continue
+                }
                 if (isColumns) {
                     query.columns.push(token)
                     continue;
@@ -78,6 +88,9 @@ class Query {
                 }
                 if (isOrder) {
                     query.sortColumns.push(token)
+                }
+                if (isLimit) {
+                    query.limit.push(token)
                 }
 
             }
@@ -165,7 +178,15 @@ class Query {
                 i++
             }
             query.sortColumns = t;
-
+            t = [];
+            for (let i = 0; i <= query.limit.length - 1; i++) {
+                t.push({ 'type': 'limit', "col": query.limit[i] })
+                if (query.limit[i + 1] === 'OFFSET') {
+                    t.push({ 'type': 'OFFSET', "col": query.limit[i + 2] })
+                }
+                break
+            }
+            query.limit = t;
             return query;
         };
 
