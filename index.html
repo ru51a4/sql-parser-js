@@ -75,7 +75,7 @@ ORDER BY gg.kek desc
                 }, '')}`
             }, '');
             html += (!obj.whereClauses.length) ? '' : `<span  class="operator"><br>WHERE</span>`;
-            html += (!obj.whereClauses.length) ? '' : obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span>${c.type}</span> <span>${c.right}</span> <span>${c.next != undefined ? c.next : ''}</span>  `, '');
+            html += (!obj.whereClauses.length) ? '' : obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span>${c.type}</span> <span>${getHtml(c.right)}</span> <span>${c.next != undefined ? c.next : ''}</span>  `, '');
             html += (!obj.groupByColumns.length) ? '' : `<span class="operator"><br>GROUP BY</span>`;
             html += obj.groupByColumns.reduce((acc, c) => acc + `<span> ${c.col}</span>`, '');
 
