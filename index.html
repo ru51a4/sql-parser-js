@@ -28,8 +28,9 @@
         <div class="row mt-5">
             <div class="col-6">
                 <textarea id="sql" class="form-control" rows="20" aria-label="scss">
-( SELECT a.id, gg.id FROM gg.diaries a JOIN gg.table gg ON a.id = gg.di JOIN ( SELECT * FROM nested_table nt JOIN ( SELECT * FROM nested_table2 nt2 ) ntt2 on ntt2.id = 1337 ) asd on asd.id = gg.id WHERE 1 = 1
-OR gg.id = 1337 GROUP BY asd DESC )
+SELECT * FROM diaries a JOIN
+( SELECT diary_id as di, MAX(id) as kek FROM posts group by diary_id ) gg ON a.id = gg.di
+ORDER BY gg.kek desc
  
             </textarea>
             </div>
@@ -48,14 +49,12 @@ OR gg.id = 1337 GROUP BY asd DESC )
     let main = document.querySelector('.main');
 
     document.querySelector("button").addEventListener('click', () => {
-        let obj = getObject(sql.value);
-
+        let obj = getObject(`( ${sql.value} )`);
+        console.log({ obj })
         let getHtml = (obj) => {
             let html = "<br>";
-            console.log({ obj })
             html += '<span class="operator">SELECT </span>';
-            console.log({ 'aa': obj.columns })
-            html += (!obj.columns.length) ? '' : obj.columns.reduce((acc, c) => acc + `<span>${c}</span><span>, </span>`, '');
+            html += (!obj.columns.length) ? '' : obj.columns.reduce((acc, c, i) => acc + `<span>${c.col}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
             html += `<span class="operator"><br> FROM </span>`;
             html += `<span>${obj.fromSources[0].table}</span>  <span class="alias">${obj.fromSources[0].alias} </span>`
             html += (!obj.joins.length) ? '' : obj.joins.reduce((acc, c) => {
@@ -72,7 +71,11 @@ OR gg.id = 1337 GROUP BY asd DESC )
             html += (!obj.whereClauses.length) ? '' : `<span  class="operator"><br>WHERE</span>`;
             html += (!obj.whereClauses.length) ? '' : obj.whereClauses.reduce((acc, c) => acc + `<span> ${c.left}</span> <span>${c.type}</span> <span>${c.right}</span> <span>${c.next ?? ''}</span>  `, '');
             html += (!obj.groupByColumns.length) ? '' : `<span class="operator"><br>GROUP BY</span>`;
-            html += obj.groupByColumns.reduce((acc, c) => acc + `<span> ${c.col}</span> <span>${c.type}</span>`, '');
+            html += obj.groupByColumns.reduce((acc, c) => acc + `<span> ${c.col}</span>`, '');
+
+            html += (!obj.sortColumns.length) ? '' : `<span class="operator"><br>SORT BY</span>`;
+            html += obj.sortColumns.reduce((acc, c) => acc + `<span> ${c.col}</span> <span>${c.type}</span>`, '');
+
             html += `</div>`
             return html
         }

@@ -4,7 +4,7 @@ class Query {
     joins = [];
     whereClauses = [];
     groupByColumns = [];
-    //sortColumns = [];
+    sortColumns = [];
     //limit;
     static build = (input) => {
         input = input.split("\n").join(" ").split(" ").map((s) => s.toUpperCase().split(",").join(""));
@@ -16,6 +16,7 @@ class Query {
             let isJoin = false;
             let isWhere = false;
             let isGroup = false;
+            let isOrder = false;
             while (str.length) {
                 let token = str.shift();
                 if (token === 'SELECT') {
@@ -46,6 +47,15 @@ class Query {
                     str.shift();
                     continue
                 }
+                if (token === 'ORDER') {
+                    isFromSources = false;
+                    isJoin = false;
+                    isWhere = false;
+                    isGroup = false;
+                    isOrder = true;
+                    str.shift();
+                    continue
+                }
                 if (isColumns) {
                     query.columns.push(token)
                     continue;
@@ -66,6 +76,9 @@ class Query {
                 if (isGroup) {
                     query.groupByColumns.push(token)
                 }
+                if (isOrder) {
+                    query.sortColumns.push(token)
+                }
 
             }
             let t = [];
@@ -73,6 +86,18 @@ class Query {
                 t.push({ "table": query.fromSources[i], 'alias': query.fromSources[i + 1] })
             }
             query.fromSources = t;
+
+            t = [];
+            for (let i = 0; i <= query.columns.length - 1; i++) {
+                if (query.columns[i + 1] === 'AS') {
+                    t.push({ "col": query.columns[i], 'alias': query.columns[i + 2] })
+                    i++
+                    i++;
+                } else {
+                    t.push({ "col": query.columns[i] })
+                }
+            }
+            query.columns = t;
             t = [];
             for (let i = 0; i <= query.joins.length - 1; i = i + 2) {
                 t.push({ "table": query.joins[i], 'alias': query.joins[i + 1] })
@@ -100,10 +125,17 @@ class Query {
             }
             query.whereClauses = t;
             t = [];
-            for (let i = 0; i <= query.groupByColumns.length - 1; i = i + 2) {
-                t.push({ "col": query.groupByColumns[i], 'type': query.groupByColumns[i + 1] })
+            for (let i = 0; i <= query.groupByColumns.length - 1; i++) {
+                t.push({ "col": query.groupByColumns[i] })
             }
             query.groupByColumns = t;
+            t = [];
+            for (let i = 0; i <= query.sortColumns.length - 1; i = i + 2) {
+                t.push({ "col": query.sortColumns[i], 'type': query.sortColumns[i + 1] })
+                i++
+            }
+            query.sortColumns = t;
+
             return query;
         };
 
@@ -113,12 +145,12 @@ class Query {
             let tt = [];
             while (str.length) {
                 let token = str.shift();
-                if (token.includes('(')) {
+                if (token === '(') {
                     t[t.length - 1].push(...tt);
                     tt = [];
                     t.push([])
                 }
-                else if (token.includes(')')) {
+                else if (token === ')') {
                     t[t.length - 1].push(...tt);
                     tt = [];
                     //
