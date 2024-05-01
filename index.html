@@ -57,7 +57,7 @@ ORDER BY gg.kek desc
                 return obj
             }
             if (!init) {
-                html += '( ';
+                html += ' ( ';
             }
             html += '<span class="operator">SELECT </span>';
             html += (!obj.columns.length) ? '' : obj.columns.reduce((acc, c, i) => acc + `<span>${getHtml(c.col)}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
@@ -84,7 +84,7 @@ ORDER BY gg.kek desc
 
 
             if (!init) {
-                html += ' )';
+                html += ' ) ';
             }
             return html
         }
