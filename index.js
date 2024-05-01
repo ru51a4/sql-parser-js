@@ -7,7 +7,7 @@ class Query {
     sortColumns = [];
     //limit;
     static build = (input) => {
-        input = input.split("\n").join(" ").split(" ").map((s) => s.toUpperCase().split(",").join(""));
+        input = input.split("\n").join(" ").trim().split(" ").map((s) => s.toUpperCase().split(",").join(""));
 
         let lex = (str) => {
             let query = new Query();
@@ -82,14 +82,29 @@ class Query {
 
             }
             let t = [];
+            if (!query.fromSources.length) {
+                throw 'Error in from';
+            }
             for (let i = 0; i <= query.fromSources.length - 1; i = i + 2) {
+                if (!query.fromSources[i] || !query.fromSources[i + 1]) {
+                    throw 'Error in from';
+                }
                 t.push({ "table": query.fromSources[i], 'alias': query.fromSources[i + 1] })
             }
             query.fromSources = t;
 
             t = [];
+            if (!query.columns.length) {
+                throw 'Error in from';
+            }
             for (let i = 0; i <= query.columns.length - 1; i++) {
+                if (!query.columns[i]) {
+                    throw 'Error in columns';
+                }
                 if (query.columns[i + 1] === 'AS') {
+                    if (!query.columns[i] || !query.columns[i + 2]) {
+                        throw 'Error in columns';
+                    }
                     t.push({ "col": query.columns[i], 'alias': query.columns[i + 2] })
                     i++
                     i++;
@@ -101,7 +116,13 @@ class Query {
             t = [];
             for (let i = 0; i <= query.joins.length - 1; i = i + 2) {
                 t.push({ "table": query.joins[i], 'alias': query.joins[i + 1] })
+                if (!query.joins[i] || !query.joins[i + 1]) {
+                    throw 'Error in join';
+                }
                 if (query.joins[i + 2] === 'ON' || query.joins[i + 2] === 'AND' || query.joins[i + 2] === 'OR') {
+                    if (!query.joins[i + 3] || !query.joins[i + 5] || !query.joins[i + 4] || !query.joins[i + 2]) {
+                        throw 'Error in join';
+                    }
                     t[t.length - 1].exp = [];
                     t[t.length - 1].exp.push({ 'left': query.joins[i + 3], 'right': query.joins[i + 5], 'type': query.joins[i + 4], 'ttype': query.joins[i + 2] })
                     i++;
@@ -116,10 +137,16 @@ class Query {
             for (let i = 0; i <= query.whereClauses.length - 1; i = i + 3) {
                 let next = (query.whereClauses[i + 3]);
                 if (next) {
+                    if (!query.whereClauses[i + 3] || !query.whereClauses[i] || !query.whereClauses[i + 2] || !query.whereClauses[i + 1]) {
+                        throw 'Error in where';
+                    }
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
                     i++
                 }
                 else {
+                    if (!query.whereClauses[i] || !query.whereClauses[i + 2] || !query.whereClauses[i + 1]) {
+                        throw 'Error in where';
+                    }
                     t.push({ "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
                 }
             }
@@ -131,6 +158,9 @@ class Query {
             query.groupByColumns = t;
             t = [];
             for (let i = 0; i <= query.sortColumns.length - 1; i = i + 2) {
+                if (!query.sortColumns[i]) {
+                    throw 'Error in ORDER';
+                }
                 t.push({ "col": query.sortColumns[i], 'type': query.sortColumns[i + 1] })
                 i++
             }

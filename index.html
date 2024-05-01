@@ -30,25 +30,19 @@
                 <textarea id="sql" class="form-control" rows="20" aria-label="scss">
 SELECT * FROM diaries a JOIN
 ( SELECT diary_id as di, MAX(id) as kek FROM posts p group by diary_id ) gg ON a.id = gg.di
-ORDER BY gg.kek desc
- 
-            </textarea>
+ORDER BY gg.kek desc</textarea>
             </div>
             <div class="main col-6">
             </div>
         </div>
-        <div class="row mt-5">
-            <div class="col-12 d-flex justify-content-center">
-                <button type="button" class="btn btn-primary">click</button>
-            </div>
+        <div class="row error mt-5 d-flex justify-content-center">
         </div>
     </div>
 </body>
 <script>
     let sql = document.querySelector('#sql');
     let main = document.querySelector('.main');
-
-    document.querySelector("button").addEventListener('click', () => {
+    let mainfn = () => {
         let obj = getObject(`( ${sql.value} )`);
         let getHtml = (obj, init = false) => {
             let html = "<br>";
@@ -89,7 +83,33 @@ ORDER BY gg.kek desc
             return html
         }
         main.innerHTML = getHtml(obj[0], 1)
+        document.querySelector('.error').innerHTML = `<div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
+                <div>
+                    sql valid
+                </div>
+                </div>
+                                `;
+    }
+    sql.addEventListener('keyup', () => {
+        try {
+            mainfn();
+        } catch (e) {
+            document.querySelector('.error').innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                <div>
+                    ${e}
+                </div>
+                </div>
+                `;
+
+        }
+
     }, false);
+    document.addEventListener("DOMContentLoaded", mainfn());
+
+
 </script>
 
 </html>
