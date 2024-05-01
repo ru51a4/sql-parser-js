@@ -29,7 +29,7 @@
             <div class="col-6">
                 <textarea id="sql" class="form-control" rows="20" aria-label="scss">
 SELECT * FROM diaries a JOIN
-( SELECT diary_id as di, MAX(id) as kek FROM posts group by diary_id ) gg ON a.id = gg.di
+( SELECT diary_id as di, MAX(id) as kek FROM posts p group by diary_id ) gg ON a.id = gg.di
 ORDER BY gg.kek desc
  
             </textarea>
