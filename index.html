@@ -50,16 +50,22 @@ ORDER BY gg.kek desc
 
     document.querySelector("button").addEventListener('click', () => {
         let obj = getObject(`( ${sql.value} )`);
-        console.log({ obj })
-        let getHtml = (obj) => {
+        let getHtml = (obj, init = false) => {
             let html = "<br>";
+
+            if (typeof obj === 'string') {
+                return obj
+            }
+            if (!init) {
+                html += '( ';
+            }
             html += '<span class="operator">SELECT </span>';
-            html += (!obj.columns.length) ? '' : obj.columns.reduce((acc, c, i) => acc + `<span>${c.col}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
+            html += (!obj.columns.length) ? '' : obj.columns.reduce((acc, c, i) => acc + `<span>${getHtml(c.col)}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
             html += `<span class="operator"><br> FROM </span>`;
-            html += `<span>${obj.fromSources[0].table}</span>  <span class="alias">${obj.fromSources[0].alias} </span>`
+            html += `<span>${getHtml(obj.fromSources[0].table)}</span>  <span class="alias">${obj.fromSources[0].alias} </span>`
             html += (!obj.joins.length) ? '' : obj.joins.reduce((acc, c) => {
                 if (typeof c.table === 'object') {
-                    return acc + '<span class="operator"><br>JOIN </span> ( ' + getHtml(c.table) + ' ) ' + `<span class="alias">${c.alias}</span> ` + c.exp.reduce((acc, c) => {
+                    return acc + '<span class="operator"><br>JOIN </span> ' + getHtml(c.table) + '' + `<span class="alias">${c.alias}</span> ` + c.exp.reduce((acc, c) => {
                         return acc + `<span  class="operator">${c.ttype}</span> <span>${c.left}</span> <span>${c.type}</span> <span>${c.right}</span>`
                     }, '')
                 }
@@ -69,17 +75,20 @@ ORDER BY gg.kek desc
                 }, '')}`
             }, '');
             html += (!obj.whereClauses.length) ? '' : `<span  class="operator"><br>WHERE</span>`;
-            html += (!obj.whereClauses.length) ? '' : obj.whereClauses.reduce((acc, c) => acc + `<span> ${c.left}</span> <span>${c.type}</span> <span>${c.right}</span> <span>${c.next ?? ''}</span>  `, '');
+            html += (!obj.whereClauses.length) ? '' : obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span>${c.type}</span> <span>${c.right}</span> <span>${c.next != undefined ? c.next : ''}</span>  `, '');
             html += (!obj.groupByColumns.length) ? '' : `<span class="operator"><br>GROUP BY</span>`;
             html += obj.groupByColumns.reduce((acc, c) => acc + `<span> ${c.col}</span>`, '');
 
-            html += (!obj.sortColumns.length) ? '' : `<span class="operator"><br>SORT BY</span>`;
+            html += (!obj.sortColumns.length) ? '' : `<span class="operator"><br>ORDER BY</span>`;
             html += obj.sortColumns.reduce((acc, c) => acc + `<span> ${c.col}</span> <span>${c.type}</span>`, '');
 
-            html += `</div>`
+
+            if (!init) {
+                html += ' )';
+            }
             return html
         }
-        main.innerHTML = getHtml(obj[0])
+        main.innerHTML = getHtml(obj[0], 1)
     }, false);
 </script>
 
