@@ -7,8 +7,11 @@ class Query {
     sortColumns = [];
     limit = []
     static build = (input) => {
-        input = input.split("\n").join(" ").trim().split(" ").map((s) => s.toUpperCase().split(",").join(""));
-
+        input = input.split("\n").join(" ").trim()
+            .split("(").join(" ( ")
+            .split(")").join(" ) ")
+            .split(" ")
+            .filter(c => !!c).map((s) => s.toUpperCase())
         let lex = (str) => {
             let query = new Query();
             let isColumns = false;
@@ -194,26 +197,37 @@ class Query {
         let t = [[]];
         let nested = (str) => {
             let tt = [];
+            let counter = 0;
+            let stack = [];
             while (str.length) {
                 let token = str.shift();
                 if (token === '(') {
-                    t[t.length - 1].push(...tt);
-                    tt = [];
-                    t.push([])
+                    counter++;
+                    if (str[0] === "SELECT") {
+                        stack.push(counter)
+                        t[t.length - 1].push(...tt);
+                        tt = [];
+                        t.push([])
+                    }
                 }
                 else if (token === ')') {
-                    t[t.length - 1].push(...tt);
-                    tt = [];
-                    //
-                    let c = t[t.length - 1];
-                    t.pop();
-                    t[t.length - 1].push(c);
+                    if (stack[stack.length - 1] === counter) {
+                        stack.pop();
+                        t[t.length - 1].push(...tt);
+                        tt = [];
+                        //
+                        let c = t[t.length - 1];
+                        t.pop();
+                        t[t.length - 1].push(c);
+                    }
+                    counter--;
                 } else {
                     tt.push(token)
                 }
             }
 
-        };
+        }
+        console.log(JSON.parse(JSON.stringify(input)))
         nested(input);
 
         let calc = (c) => {
