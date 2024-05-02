@@ -10,6 +10,7 @@ class Query {
         input = input.split("\n").join(" ").trim()
             .split("(").join(" ( ")
             .split(")").join(" ) ")
+            .split(",").join("")
             .split(" ")
             .filter(c => !!c).map((s) => s.toUpperCase())
         let lex = (str) => {
