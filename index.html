@@ -55,22 +55,16 @@ ORDER BY gg.kek desc</textarea>
                 html += ' ( ';
             }
             html += '<span class="operator">SELECT </span>';
-            html += (!obj.columns.length) ? '' : obj.columns.reduce((acc, c, i) => acc + `<span>${getHtml(c.col)}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
+            html += obj.columns.reduce((acc, c, i) => acc + `<span>${getHtml(c.col)}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
             html += `<span class="operator"><br> FROM </span>`;
-            html += `<span>${getHtml(obj.fromSources[0].table)}</span>  <span class="alias">${obj.fromSources[0].alias} </span>`
-            html += (!obj.joins.length) ? '' : obj.joins.reduce((acc, c) => {
-                if (typeof c.table === 'object') {
-                    return acc + '<span class="operator"><br>JOIN </span> ' + getHtml(c.table) + '' + `<span class="alias">${c.alias}</span> ` + c.exp.reduce((acc, c) => {
-                        return acc + `<span  class="operator">${c.ttype}</span> <span>${c.left}</span> <span>${c.type}</span> <span>${c.right}</span>`
-                    }, '')
-                }
-                return acc + `<span class="operator"><br>JOIN</span> <span>${c.table}</span> <span class="alias">${c.alias}</span> 
-                        ${c.exp.reduce((acc, c) => {
-                    return acc + `<span  class="operator">${c.ttype}</span> <span>${c.left}</span> <span>${c.type}</span> <span>${c.right}</span>`
-                }, '')}`
+            html += `<span>${getHtml(obj.fromSources[0].table)}</span>  <span class="alias">${obj.fromSources[0]?.alias ?? ''} </span>`
+            html += obj.joins.reduce((acc, c) => {
+                return acc + `<span class="operator"><br>${c.type ?? ''} JOIN </span> ` + getHtml(c.table) + '' + ` <span class="alias">${c.alias}</span> ` + c.exp?.reduce((acc, c) => {
+                    return acc + `<span class="operator"> ${c.ttype}</span> <span>${getHtml(c.left)}</span> <span>${c.type}</span> <span>${getHtml(c.right)}</span>`
+                }, '')
             }, '');
             html += (!obj.whereClauses.length) ? '' : `<span  class="operator"><br>WHERE</span>`;
-            html += (!obj.whereClauses.length) ? '' : obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span>${c.type}</span> <span>${getHtml(c.right)}</span> <span>${c.next != undefined ? c.next : ''}</span>  `, '');
+            html += obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span>${c.type}</span> <span>${getHtml(c.right)}</span> <span class="operator">${c.next != undefined ? c.next : ''}</span>  `, '');
             html += (!obj.groupByColumns.length) ? '' : `<span class="operator"><br>GROUP BY</span>`;
             html += obj.groupByColumns.reduce((acc, c) => acc + `<span> ${c.col}</span>`, '');
 
@@ -94,6 +88,7 @@ ORDER BY gg.kek desc</textarea>
                                 `;
     }
     sql.addEventListener('keyup', () => {
+
         try {
             mainfn();
         } catch (e) {
@@ -108,7 +103,6 @@ ORDER BY gg.kek desc</textarea>
                 `;
 
         }
-
     }, false);
     document.addEventListener("DOMContentLoaded", mainfn());
 

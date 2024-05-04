@@ -22,6 +22,8 @@ class Query {
             let isGroup = false;
             let isOrder = false;
             let isLimit = false;
+            let typeJoin = '';
+            let typeJoins = ["INNER", "LEFT", "RIGHT", "FULL"];
             while (str.length) {
                 let token = str.shift();
                 if (token === 'SELECT') {
@@ -31,6 +33,17 @@ class Query {
                 if (token === 'FROM') {
                     isColumns = false;
                     isFromSources = true;
+                    continue
+                }
+                if (typeJoins.includes(token)) {
+                    if (str[0] === 'OUTER') {
+                        str.shift();
+                        typeJoin = "FULL OUTER";
+                    }
+                    str.shift();
+                    typeJoin = token
+                    isFromSources = false;
+                    isJoin = true;
                     continue
                 }
                 if (token === 'JOIN') {
@@ -79,7 +92,7 @@ class Query {
                     continue;
                 }
                 if (isJoin) {
-                    query.joins.push(token)
+                    query.joins.push({ type: typeJoin, token })
                     continue;
                 }
 
@@ -103,9 +116,6 @@ class Query {
                 throw 'Error in from';
             }
             for (let i = 0; i <= query.fromSources.length - 1; i = i + 2) {
-                if (!query.fromSources[i] || !query.fromSources[i + 1]) {
-                    throw 'Error in from';
-                }
                 t.push({ "table": query.fromSources[i], 'alias': query.fromSources[i + 1] })
             }
             query.fromSources = t;
@@ -131,20 +141,16 @@ class Query {
             }
             query.columns = t;
             t = [];
-            for (let i = 0; i <= query.joins.length - 1; i = i + 2) {
-                t.push({ "table": query.joins[i], 'alias': query.joins[i + 1] })
-                if (!query.joins[i] || !query.joins[i + 1]) {
-                    throw 'Error in join';
-                }
-                if (query.joins[i + 2] === 'ON' || query.joins[i + 2] === 'AND' || query.joins[i + 2] === 'OR') {
-                    if (!query.joins[i + 3] || !query.joins[i + 5] || !query.joins[i + 4] || !query.joins[i + 2]) {
-                        throw 'Error in join';
-                    }
-                    t[t.length - 1].exp = [];
-                    t[t.length - 1].exp.push({ 'left': query.joins[i + 3], 'right': query.joins[i + 5], 'type': query.joins[i + 4], 'ttype': query.joins[i + 2] })
+            for (let i = 0; i <= query.joins.length - 1; i = i + 1) {
+
+                if (query.joins[i]?.token === 'ON' || query.joins[i]?.token === 'AND' || query.joins[i]?.token === 'OR') {
+
+                    t[t.length - 1].exp.push({ 'ttype': query.joins[i].token, 'left': query.joins[i + 1]?.token, 'right': query.joins[i + 3]?.token, 'type': query.joins[i + 2]?.token })
                     i++;
                     i++;
                     i++;
+                } else {
+                    t.push({ 'exp': [], 'type': query.joins[i]?.type, "table": query.joins[i]?.token, 'alias': query.joins[i + 1]?.token })
                     i++;
                 }
             }
@@ -154,16 +160,28 @@ class Query {
             for (let i = 0; i <= query.whereClauses.length - 1; i = i + 3) {
                 let next = (query.whereClauses[i + 3]);
                 if (next) {
-                    if (!query.whereClauses[i + 3] || !query.whereClauses[i] || !query.whereClauses[i + 2] || !query.whereClauses[i + 1]) {
-                        throw 'Error in where';
+                    let r = [];
+                    let left = query.whereClauses[i];
+                    let type = query.whereClauses[i + 1];
+
+                    if (type === 'IN') {
+                        let q = query.whereClauses[i + 2];
+                        i++;
+                        i++;
+                        i++;
+                        i++
+                        while (q != ')') {
+                            q = query.whereClauses[i];
+                            i++
+                            r.push(q)
+                        }
+                        t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
+
                     }
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
                     i++
                 }
                 else {
-                    if (!query.whereClauses[i] || !query.whereClauses[i + 2] || !query.whereClauses[i + 1]) {
-                        throw 'Error in where';
-                    }
                     t.push({ "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
                 }
             }
