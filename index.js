@@ -7,10 +7,9 @@ class Query {
     sortColumns = [];
     limit = []
     static build = (input) => {
-        input = input.split("\n").join(" ").trim()
+        input = input.split("\n").join(" ").split(",").join(" ").trim()
             .split("(").join(" ( ")
             .split(")").join(" ) ")
-            .split(",").join("")
             .split(" ")
             .filter(c => !!c).map((s) => s.toUpperCase())
         let lex = (str) => {
