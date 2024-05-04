@@ -121,13 +121,19 @@ class Query {
             query.fromSources = t;
 
             t = [];
-            if (!query.columns.length) {
-                throw 'Error in from';
+
+
+
+            for (let i = 0; i <= query.columns.length - 1; i++) {
+                if (query.columns[i] === '(') {
+                    query.columns[i + 1] = `(` + query.columns[i + 1]
+                    continue
+                } if (query.columns[i] === ')') {
+                    t[t.length - 1].col += ')';
+                    continue
+                }
             }
             for (let i = 0; i <= query.columns.length - 1; i++) {
-                if (!query.columns[i]) {
-                    throw 'Error in columns';
-                }
                 if (query.columns[i + 1] === 'AS') {
                     if (!query.columns[i] || !query.columns[i + 2]) {
                         throw 'Error in columns';
@@ -231,6 +237,8 @@ class Query {
                         t[t.length - 1].push(...tt);
                         tt = [];
                         t.push([])
+                    } else {
+                        tt[tt.length - 1] += (token + str.shift())
                     }
                 }
                 else if (token === ')') {
@@ -242,8 +250,11 @@ class Query {
                         let c = t[t.length - 1];
                         t.pop();
                         t[t.length - 1].push(c);
+                    } else {
+                        tt[tt.length - 1] += (token)
                     }
                     counter--;
+
                 } else {
                     tt.push(token)
                 }
