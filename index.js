@@ -121,18 +121,6 @@ class Query {
             query.fromSources = t;
 
             t = [];
-
-
-
-            for (let i = 0; i <= query.columns.length - 1; i++) {
-                if (query.columns[i] === '(') {
-                    query.columns[i + 1] = `(` + query.columns[i + 1]
-                    continue
-                } if (query.columns[i] === ')') {
-                    t[t.length - 1].col += ')';
-                    continue
-                }
-            }
             for (let i = 0; i <= query.columns.length - 1; i++) {
                 if (query.columns[i + 1] === 'AS') {
                     if (!query.columns[i] || !query.columns[i + 2]) {
@@ -238,7 +226,12 @@ class Query {
                         tt = [];
                         t.push([])
                     } else {
-                        tt[tt.length - 1] += (token + str.shift())
+                        tt[tt.length - 1] += token
+                        let _t = [];
+                        while (str[0] !== ')') {
+                            _t.push(str.shift())
+                        }
+                        tt[tt.length - 1] += _t.join(",")
                     }
                 }
                 else if (token === ')') {
@@ -261,8 +254,9 @@ class Query {
             }
 
         }
-        console.log(JSON.parse(JSON.stringify(input)))
+        console.log({ "input": JSON.parse(JSON.stringify(input)) })
         nested(input);
+        console.log({ "t": JSON.parse(JSON.stringify(t)) })
 
         let calc = (c) => {
             c.splice(0, c.length - 1, lex(c))
