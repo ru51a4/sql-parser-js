@@ -198,10 +198,10 @@ class Query {
                 if (token === '(') {
                     counter++;
                     if (str[0] === "SELECT") {
-                        if (tt[tt.length - 1] === 'IN') {
+                        if (tt[tt.length - 1] === 'IN' || tt[tt.length - 1] === 'EXISTS') {
                             if (tt[tt.length - 2] === "NOT") {
-                                tt[tt.length - 2] += ' IN';
-                                tt.pop();
+                                let c = tt.pop();
+                                tt[tt.length - 1] += ' ' + c;
                             }
                         }
                         stack.push(counter)
@@ -209,10 +209,10 @@ class Query {
                         tt = [];
                         t.push([])
                     } else {
-                        if (tt[tt.length - 1] === 'IN') {
+                        if (tt[tt.length - 1] === 'IN' || tt[tt.length - 1] === 'EXISTS') {
                             if (tt[tt.length - 2] === "NOT") {
-                                tt[tt.length - 2] += ' IN';
-                                tt.pop();
+                                let c = tt.pop();
+                                tt[tt.length - 1] += ' ' + c;
                             }
                             tt.push('')
                         }
