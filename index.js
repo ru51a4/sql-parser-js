@@ -153,28 +153,6 @@ class Query {
             for (let i = 0; i <= query.whereClauses.length - 1; i = i + 3) {
                 let next = (query.whereClauses[i + 3]);
                 if (next) {
-                    let r = [];
-                    let left = query.whereClauses[i];
-                    let type = query.whereClauses[i + 1];
-
-                    if (type === 'IN') {
-                        //todo
-                        let q = query.whereClauses[i + 2];
-                        i++;
-                        i++;
-                        i++;
-                        i++
-                        while (q != ')') {
-                            q = query.whereClauses[i];
-                            i++
-                            r.push(q)
-                        }
-                        t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
-
-                    } else {
-                        t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
-
-                    }
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
                     i++
                 }
@@ -225,6 +203,9 @@ class Query {
                         tt = [];
                         t.push([])
                     } else {
+                        if (tt[tt.length - 1] === 'IN') {
+                            tt.push('')
+                        }
                         tt[tt.length - 1] += token
                         let _t = [];
                         while (str[0] !== ')') {
