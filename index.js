@@ -204,6 +204,10 @@ class Query {
                         t.push([])
                     } else {
                         if (tt[tt.length - 1] === 'IN') {
+                            if (tt[tt.length - 2] === "NOT") {
+                                tt[tt.length - 2] += ' IN';
+                                tt.pop();
+                            }
                             tt.push('')
                         }
                         tt[tt.length - 1] += token
