@@ -198,6 +198,12 @@ class Query {
                 if (token === '(') {
                     counter++;
                     if (str[0] === "SELECT") {
+                        if (tt[tt.length - 1] === 'IN') {
+                            if (tt[tt.length - 2] === "NOT") {
+                                tt[tt.length - 2] += ' IN';
+                                tt.pop();
+                            }
+                        }
                         stack.push(counter)
                         t[t.length - 1].push(...tt);
                         tt = [];
