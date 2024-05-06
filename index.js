@@ -198,18 +198,27 @@ class Query {
                 if (token === '(') {
                     counter++;
                     if (str[0] === "SELECT") {
-                        if (tt[tt.length - 1] === 'IN' || tt[tt.length - 1] === 'EXISTS') {
+                        if (tt[tt.length - 1] === 'IN') {
                             if (tt[tt.length - 2] === "NOT") {
                                 let c = tt.pop();
                                 tt[tt.length - 1] += ' ' + c;
                             }
+                        }
+                        if (tt[tt.length - 1] === 'EXISTS') {
+                            if (tt[tt.length - 2] === "NOT") {
+                                let c = tt.pop();
+                                tt[tt.length - 1] += ' ' + c;
+                            }
+                            let q = tt.pop();
+                            tt.push("")
+                            tt.push(q)
                         }
                         stack.push(counter)
                         t[t.length - 1].push(...tt);
                         tt = [];
                         t.push([])
                     } else {
-                        if (tt[tt.length - 1] === 'IN' || tt[tt.length - 1] === 'EXISTS') {
+                        if (tt[tt.length - 1] === 'IN') {
                             if (tt[tt.length - 2] === "NOT") {
                                 let c = tt.pop();
                                 tt[tt.length - 1] += ' ' + c;
