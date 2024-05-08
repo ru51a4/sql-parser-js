@@ -3,6 +3,7 @@ class Query {
     fromSources = [];
     joins = [];
     whereClauses = [];
+    havingClauses = [];
     groupByColumns = [];
     sortColumns = [];
     limit = []
@@ -21,7 +22,9 @@ class Query {
             let isGroup = false;
             let isOrder = false;
             let isLimit = false;
+            let isHaving = false;
             let typeJoin = '';
+
             let typeJoins = ["INNER", "LEFT", "RIGHT", "FULL"];
             while (str.length) {
                 let token = str.shift();
@@ -54,6 +57,13 @@ class Query {
                     isFromSources = false;
                     isJoin = false;
                     isWhere = true;
+                    continue
+                }
+                if (token === 'HAVING') {
+                    isFromSources = false;
+                    isJoin = false;
+                    isWhere = true;
+                    isHaving = true;
                     continue
                 }
                 if (token === 'GROUP') {
@@ -134,6 +144,7 @@ class Query {
             }
             query.columns = t;
             t = [];
+            let alias = false;
             for (let i = 0; i <= query.joins.length - 1; i = i + 1) {
 
                 if (query.joins[i]?.token === 'ON' || query.joins[i]?.token === 'AND' || query.joins[i]?.token === 'OR') {
@@ -143,8 +154,13 @@ class Query {
                     i++;
                     i++;
                 } else {
-                    t.push({ 'exp': [], 'type': query.joins[i]?.type, "table": query.joins[i]?.token, 'alias': query.joins[i + 1]?.token })
-                    i++;
+                    if (query.joins[i + 1]?.token === 'ON' || query.joins[i + 1]?.token === 'AND' || query.joins[i + 1]?.token === 'OR') {
+                        t.push({ 'exp': [], 'type': query.joins[i]?.type, "table": query.joins[i]?.token, 'alias': null })
+                    } else {
+                        t.push({ 'exp': [], 'type': query.joins[i]?.type, "table": query.joins[i]?.token, 'alias': query.joins[i + 1]?.token })
+                        i++;
+                    }
+
                 }
             }
             query.joins = t;
@@ -161,6 +177,20 @@ class Query {
                 }
             }
             query.whereClauses = t;
+
+            t = [];
+            for (let i = 0; i <= query.havingClauses.length - 1; i = i + 3) {
+                let next = (query.havingClauses[i + 3]);
+                if (next) {
+                    t.push({ "next": next, "left": query.havingClauses[i], 'right': query.havingClauses[i + 2], 'type': query.havingClauses[i + 1] })
+                    i++
+                }
+                else {
+                    t.push({ "left": query.havingClauses[i], 'right': query.havingClauses[i + 2], 'type': query.havingClauses[i + 1] })
+                }
+            }
+            query.havingClauses = t;
+
             t = [];
             for (let i = 0; i <= query.groupByColumns.length - 1; i++) {
                 t.push({ "col": query.groupByColumns[i] })
@@ -218,6 +248,7 @@ class Query {
                         tt = [];
                         t.push([])
                     } else {
+
                         if (tt[tt.length - 1] === 'IN') {
                             if (tt[tt.length - 2] === "NOT") {
                                 let c = tt.pop();
