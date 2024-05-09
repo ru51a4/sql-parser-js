@@ -57,13 +57,15 @@ class Query {
                     isFromSources = false;
                     isJoin = false;
                     isWhere = true;
+                    isHaving = false;
                     continue
                 }
                 if (token === 'HAVING') {
                     isFromSources = false;
                     isJoin = false;
-                    isWhere = true;
+                    isWhere = false;
                     isHaving = true;
+                    isGroup = false;
                     continue
                 }
                 if (token === 'GROUP') {
@@ -78,6 +80,7 @@ class Query {
                     isFromSources = false;
                     isJoin = false;
                     isWhere = false;
+                    isHaving = false;
                     isGroup = false;
                     isOrder = true;
                     str.shift();
@@ -89,6 +92,7 @@ class Query {
                     isWhere = false;
                     isGroup = false;
                     isOrder = false;
+                    isHaving = false;
                     isLimit = true;
                     continue
                 }
@@ -117,6 +121,9 @@ class Query {
                 }
                 if (isLimit) {
                     query.limit.push(token)
+                }
+                if (isHaving) {
+                    query.havingClauses.push(token)
                 }
 
             }
