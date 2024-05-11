@@ -172,9 +172,15 @@ class Query {
             t = [];
             for (let i = 0; i <= query.whereClauses.length - 1; i = i + 3) {
                 let next = (query.whereClauses[i + 3]);
-                if (query.whereClauses[i] === 'NOT EXISTS' || query.whereClauses[i] === 'EXISTS') {
+                if (query.whereClauses[i + 1].fn === 'IN') {
+                    t.push({ "left": query.whereClauses[i], 'right': query.whereClauses[i + 1], 'type': '' })
+                    next = (query.whereClauses[i + 3]);
+                }
+                else if (query.whereClauses[i] === 'NOT EXISTS' || query.whereClauses[i] === 'EXISTS') {
                     //todo
+                    next = (query.whereClauses[i + 2]);
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 1], 'type': '' })
+
                 }
                 else if (next) {
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
@@ -182,6 +188,9 @@ class Query {
                 }
                 else {
                     t.push({ "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
+                }
+                if (next) {
+
                 }
             }
             query.whereClauses = t;
