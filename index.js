@@ -173,8 +173,8 @@ class Query {
             for (let i = 0; i <= query.whereClauses.length - 1; i = i + 3) {
                 let next = (query.whereClauses[i + 3]);
                 if (query.whereClauses[i + 1].fn === 'IN') {
-                    t.push({ "left": query.whereClauses[i], 'right': query.whereClauses[i + 1], 'type': '' })
-                    next = (query.whereClauses[i + 3]);
+                    next = (query.whereClauses[i + 2]);
+                    t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 1], 'type': '' })
                 }
                 else if (query.whereClauses[i] === 'NOT EXISTS' || query.whereClauses[i] === 'EXISTS') {
                     //todo
