@@ -13,6 +13,33 @@ class Query {
             .split(")").join(" ) ")
             .split(" ")
             .filter(c => !!c).map((s) => s.toUpperCase())
+        let arg = (str) => {
+            let res = [];
+            let t = '';
+            let isType = false;
+            for (let i = 0; i <= str.length - 1; i++) {
+                if (str[i] === "@") {
+                    isType = true;
+                } else if (isType && str[i] === " ") {
+                    isType = false;
+                    if (t) {
+                        res.push(t.trim());
+                    }
+                    t = "";
+                } else if (!isType && (str[i] === "(" || str[i] === ",") || str[i] === ")") {
+                    if (t) {
+                        res.push(t.trim());
+                    }
+                    t = "";
+                } else {
+                    t += str[i];
+                }
+            }
+            if (t) {
+                res.push(t.trim());
+            }
+            return res;
+        }
         let lex = (str) => {
             let query = new Query();
             let isColumns = false;
@@ -175,7 +202,12 @@ class Query {
             t = [];
             for (let i = 0; i <= query.whereClauses.length - 1; i = i + 3) {
                 let next = (query.whereClauses[i + 3]);
-                if (next) {
+                if (query.whereClauses[i] === 'NOT EXISTS' || query.whereClauses[i] === 'EXISTS') {
+                    //todo
+                    t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 1], 'type': '' })
+                    i++;
+                }
+                else if (next) {
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
                     i++
                 }
@@ -223,7 +255,15 @@ class Query {
             query.limit = t;
             return query;
         };
+        let lexfn = (arr, fn) => {
 
+            let a = JSON.parse(JSON.stringify(arr))
+            let c = { fn, args: [...a] }
+            while (arr.length) {
+                arr.shift()
+            }
+            return c;
+        };
 
         let t = [[]];
         let nested = (str) => {
@@ -233,57 +273,25 @@ class Query {
             while (str.length) {
                 let token = str.shift();
                 if (token === '(') {
-                    counter++;
-                    if (str[0] === "SELECT") {
-                        if (tt[tt.length - 1] === 'IN') {
-                            if (tt[tt.length - 2] === "NOT") {
-                                let c = tt.pop();
-                                tt[tt.length - 1] += ' ' + c;
-                            }
-                        }
-                        if (tt[tt.length - 1] === 'EXISTS') {
-                            if (tt[tt.length - 2] === "NOT") {
-                                let c = tt.pop();
-                                tt[tt.length - 1] += ' ' + c;
-                            }
-                            let q = tt.pop();
-                            tt.push("")
-                            tt.push(q)
-                        }
-                        stack.push(counter)
-                        t[t.length - 1].push(...tt);
-                        tt = [];
-                        t.push([])
-                    } else {
-
-                        if (tt[tt.length - 1] === 'IN') {
-                            if (tt[tt.length - 2] === "NOT") {
-                                let c = tt.pop();
-                                tt[tt.length - 1] += ' ' + c;
-                            }
-                            tt.push('')
-                        }
-                        tt[tt.length - 1] += token
-                        let _t = [];
-                        while (str[0] !== ')') {
-                            _t.push(str.shift())
-                        }
-                        tt[tt.length - 1] += _t.join(",")
+                    if (tt[tt.length - 2] === 'NOT') {
+                        let rr = tt.pop();
+                        tt[tt.length - 1] += ` ` + rr;
                     }
+                    stack.push(counter)
+                    t[t.length - 1].push(...tt);
+                    tt = [];
+                    t.push([])
+
                 }
                 else if (token === ')') {
-                    if (stack[stack.length - 1] === counter) {
-                        stack.pop();
-                        t[t.length - 1].push(...tt);
-                        tt = [];
-                        //
-                        let c = t[t.length - 1];
-                        t.pop();
-                        t[t.length - 1].push(c);
-                    } else {
-                        tt[tt.length - 1] += (token)
-                    }
-                    counter--;
+                    stack.pop();
+                    t[t.length - 1].push(...tt);
+                    tt = [];
+                    //
+                    let c = t[t.length - 1];
+                    t.pop();
+                    t[t.length - 1].push(c);
+
 
                 } else {
                     tt.push(token)
@@ -295,16 +303,32 @@ class Query {
         nested(input);
         console.log({ "t": JSON.parse(JSON.stringify(t)) })
 
+        let cc = 0;
         let calc = (c) => {
-            c.splice(0, c.length - 1, lex(c))
+            let type = stack[stack.length - 1] ?? 'SELECT'
+            if (c[0] === "SELECT") {
+                c.splice(0, c.length - 1, { item: lex(c), complete: true })
+            } else {
+                c.splice(0, c.length - 1, { item: lexfn(c, type), complete: true })
+            }
         }
+        let prev = {};
+        let stack = [];
         let deep = (arr, init = true) => {
+
             for (let i = 0; i <= arr.length - 1; i++) {
                 if (Array.isArray(arr[i])) {
-                    if (arr[i].length === 1) {
-                        arr[i] = arr[i][0];
+                    if (arr[i].length === 1 && arr[i][0]?.complete) {
+                        arr[i] = arr[i][0].item;
                     } else {
+                        prev = arr[i - 1];
+                        stack.push(prev)
+                        if (arr[i][0] !== 'SELECT') {
+                            arr.splice(i - 1, 1)
+                            i--
+                        }
                         deep(arr[i], 0);
+                        stack.pop();
                         i = i - 1;
                     }
                 }

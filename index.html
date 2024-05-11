@@ -29,7 +29,8 @@
             <div class="col-6">
                 <textarea id="sql" class="form-control" rows="20" aria-label="scss">
 SELECT * FROM diaries a JOIN
-(SELECT diary_id as di, MAX(id) as kek FROM posts p group by diary_id ) gg ON a.id = gg.di
+(SELECT diary_id as di, MAX(id,asd,MAX(asdd)) as kek FROM posts p group by diary_id ) gg ON a.id = gg.di
+WHERE EXISTS (SELECT * FROM asd)
 ORDER BY gg.kek desc</textarea>
             </div>
             <div class="main col-6">
@@ -44,18 +45,29 @@ ORDER BY gg.kek desc</textarea>
     let main = document.querySelector('.main');
     let mainfn = () => {
         let obj = getObject(`( ${sql.value} )`);
-        console.log({ obj })
+        console.log(obj)
         let getHtml = (obj, init = false) => {
-            let html = "<br>";
-
+            let html = ''
             if (typeof obj === 'string') {
                 return obj
             }
+            if (obj?.fn) {
+                html += ' <span class="operator">' + obj.fn + `</span>`
+                html += '('
+                obj.args.forEach((c, i) => {
+                    html += getHtml(c);
+                    html += (i !== obj.args.length - 1) ? ',' : ''
+
+                })
+                html += ')'
+                return html;
+            }
+            html = "<br>";
             if (!init) {
                 html += ' ( ';
             }
             html += '<span class="operator">SELECT </span>';
-            html += obj.columns.reduce((acc, c, i) => acc + `<span>${getHtml(c.col)}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
+            html += obj.columns?.reduce((acc, c, i) => acc + `<span>${getHtml(c.col)}</span>${c.alias ? ` AS ${c.alias}` : ''}${obj.columns.length - 1 === i ? '' : `<span>, </span>`}`, '');
             html += `<span class="operator"><br> FROM </span>`;
             html += `<span>${getHtml(obj.fromSources[0].table)}</span>  <span class="alias">${obj.fromSources[0]?.alias ?? ''} </span>`
             html += obj.joins.reduce((acc, c) => {
