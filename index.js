@@ -205,7 +205,6 @@ class Query {
                 if (query.whereClauses[i] === 'NOT EXISTS' || query.whereClauses[i] === 'EXISTS') {
                     //todo
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 1], 'type': '' })
-                    i++;
                 }
                 else if (next) {
                     t.push({ "next": next, "left": query.whereClauses[i], 'right': query.whereClauses[i + 2], 'type': query.whereClauses[i + 1] })
