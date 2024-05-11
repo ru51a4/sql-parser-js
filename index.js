@@ -262,10 +262,12 @@ class Query {
         console.log({ "t": JSON.parse(JSON.stringify(t)) })
 
         let calc = (c) => {
+            let type = stack[stack.length - 1] ?? 'SELECT'
+
             if (c[0] === "SELECT") {
-                c.splice(0, c.length - 1, { item: lex(c), complete: true })
+                c.splice(0, c.length, { item: lex(c), complete: true })
             } else {
-                c.splice(0, c.length - 1, { item: lexfn(c, type), complete: true })
+                c.splice(0, c.length, { item: lexfn(c, type), complete: true })
             }
         }
         let prev = {};
