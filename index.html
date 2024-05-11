@@ -47,6 +47,9 @@ ORDER BY gg.kek desc</textarea>
         let obj = getObject(`( ${sql.value} )`);
         console.log(obj)
         let getHtml = (obj, init = false) => {
+            if (!obj) {
+                return '';
+            }
             let html = ''
             if (typeof obj === 'string') {
                 return obj
@@ -76,7 +79,7 @@ ORDER BY gg.kek desc</textarea>
                 }, '')
             }, '');
             html += (!obj.whereClauses.length) ? '' : `<span  class="operator"><br>WHERE</span>`;
-            html += obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span class="operator">${c.type}</span> <span>${getHtml(c.right)}</span> <span class="operator">${c.next != undefined ? c.next : ''}</span>  `, '');
+            html += obj.whereClauses.reduce((acc, c) => acc + `<span> ${getHtml(c.left)}</span> <span class="">${getHtml(c.type)}</span> <span>${getHtml(c.right)}</span> <span class="operator">${c.next != undefined ? c.next : ''}</span>  `, '');
 
             html += (!obj.groupByColumns.length) ? '' : `<span class="operator"><br>GROUP BY</span>`;
             html += obj.groupByColumns.reduce((acc, c) => acc + `<span> ${c.col}</span>`, '');
