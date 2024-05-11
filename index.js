@@ -13,33 +13,7 @@ class Query {
             .split(")").join(" ) ")
             .split(" ")
             .filter(c => !!c).map((s) => s.toUpperCase())
-        let arg = (str) => {
-            let res = [];
-            let t = '';
-            let isType = false;
-            for (let i = 0; i <= str.length - 1; i++) {
-                if (str[i] === "@") {
-                    isType = true;
-                } else if (isType && str[i] === " ") {
-                    isType = false;
-                    if (t) {
-                        res.push(t.trim());
-                    }
-                    t = "";
-                } else if (!isType && (str[i] === "(" || str[i] === ",") || str[i] === ")") {
-                    if (t) {
-                        res.push(t.trim());
-                    }
-                    t = "";
-                } else {
-                    t += str[i];
-                }
-            }
-            if (t) {
-                res.push(t.trim());
-            }
-            return res;
-        }
+
         let lex = (str) => {
             let query = new Query();
             let isColumns = false;
@@ -155,9 +129,7 @@ class Query {
 
             }
             let t = [];
-            if (!query.fromSources.length) {
-                throw 'Error in from';
-            }
+
             for (let i = 0; i <= query.fromSources.length - 1; i = i + 2) {
                 t.push({ "table": query.fromSources[i], 'alias': query.fromSources[i + 1] })
             }
@@ -166,9 +138,7 @@ class Query {
             t = [];
             for (let i = 0; i <= query.columns.length - 1; i++) {
                 if (query.columns[i + 1] === 'AS') {
-                    if (!query.columns[i] || !query.columns[i + 2]) {
-                        throw 'Error in columns';
-                    }
+
                     t.push({ "col": query.columns[i], 'alias': query.columns[i + 2] })
                     i++
                     i++;
@@ -236,9 +206,7 @@ class Query {
             query.groupByColumns = t;
             t = [];
             for (let i = 0; i <= query.sortColumns.length - 1; i = i + 2) {
-                if (!query.sortColumns[i]) {
-                    throw 'Error in ORDER';
-                }
+
                 t.push({ "col": query.sortColumns[i], 'type': query.sortColumns[i + 1] })
                 i++
             }
@@ -255,13 +223,7 @@ class Query {
             return query;
         };
         let lexfn = (arr, fn) => {
-
-            let a = JSON.parse(JSON.stringify(arr))
-            let c = { fn, args: [...a] }
-            while (arr.length) {
-                arr.shift()
-            }
-            return c;
+            return { fn, args: [...arr] }
         };
 
         let t = [[]];
@@ -280,7 +242,6 @@ class Query {
                     t[t.length - 1].push(...tt);
                     tt = [];
                     t.push([])
-
                 }
                 else if (token === ')') {
                     stack.pop();
@@ -290,8 +251,6 @@ class Query {
                     let c = t[t.length - 1];
                     t.pop();
                     t[t.length - 1].push(c);
-
-
                 } else {
                     tt.push(token)
                 }
@@ -302,9 +261,7 @@ class Query {
         nested(input);
         console.log({ "t": JSON.parse(JSON.stringify(t)) })
 
-        let cc = 0;
         let calc = (c) => {
-            let type = stack[stack.length - 1] ?? 'SELECT'
             if (c[0] === "SELECT") {
                 c.splice(0, c.length - 1, { item: lex(c), complete: true })
             } else {
