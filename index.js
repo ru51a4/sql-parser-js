@@ -238,8 +238,6 @@ class Query {
         let t = [[]];
         let nested = (str) => {
             let tt = [];
-            let counter = 0;
-            let stack = [];
             while (str.length) {
                 let token = str.shift();
                 if (token === '(') {
@@ -247,13 +245,11 @@ class Query {
                         let rr = tt.pop();
                         tt[tt.length - 1] += ` ` + rr;
                     }
-                    stack.push(counter)
                     t[t.length - 1].push(...tt);
                     tt = [];
                     t.push([])
                 }
                 else if (token === ')') {
-                    stack.pop();
                     t[t.length - 1].push(...tt);
                     tt = [];
                     //
