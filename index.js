@@ -27,14 +27,17 @@ class Query {
             }
             if (i === num) {
                 if (isSelect && ttt.length) {
-                    _ttt = { start: ttt[0].i, finish: i }
-
+                    if (input[i + 1] === ' ') {
+                        _ttt = { start: ttt[0].i, finish: i }
+                    }
                     for (let j = i + 1; j <= input.length - 1; j++) {
                         ttt.push({ j, ch: input[j] });
                         if (input[j] === " ") {
                             console.log({ ttt })
                             if (ttt.map(c => c.ch).join("").includes('FROM')) {
                                 _ttt = {};
+                            } else {
+                                _ttt = { start: ttt[0].i, finish: j }
                             }
                             break;
                         }
