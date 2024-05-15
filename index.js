@@ -11,6 +11,7 @@ class Query {
         input = input.split("").map((c) => c.toUpperCase());
         console.log({ num });
         let ttt = []
+        let _ttt = [];
         let isSelect = false;
         for (let i = 0; i <= input.length - 1; i++) {
             ttt.push({ i, ch: input[i] });
@@ -26,16 +27,27 @@ class Query {
             }
             if (i === num) {
                 if (isSelect && ttt.length) {
-                    ttt = { start: ttt[0].i, finish: i }
+                    _ttt = { start: ttt[0].i, finish: i }
+
+                    for (let j = i + 1; j <= input.length - 1; j++) {
+                        ttt.push({ j, ch: input[j] });
+                        if (input[j] === " ") {
+                            console.log({ ttt })
+                            if (ttt.map(c => c.ch).join("").includes('FROM')) {
+                                _ttt = {};
+                            }
+                            break;
+                        }
+                    }
                 } else {
-                    ttt = {};
+                    _ttt = {};
                 }
                 break
             }
         }
-        if (ttt.start) {
-            input.splice(ttt.finish + 1, 0, ')')
-            input.splice(ttt.start, 0, 'curr(');
+        if (_ttt.start) {
+            input.splice(_ttt.finish + 1, 0, ')')
+            input.splice(_ttt.start, 0, 'curr(');
         }
         input = `( ${input.join("")} )`.split("\n").join(" ").split(",").join(" ").trim()
             .split("(").join(" ( ")
