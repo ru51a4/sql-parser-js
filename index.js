@@ -7,8 +7,37 @@ class Query {
     groupByColumns = [];
     sortColumns = [];
     limit = []
-    static build = (input) => {
-        input = input.split("\n").join(" ").split(",").join(" ").trim()
+    static build = (input, num) => {
+        input = input.split("").map((c) => c.toUpperCase());
+        console.log({ num });
+        let ttt = []
+        let isSelect = false;
+        for (let i = 0; i <= input.length - 1; i++) {
+            ttt.push({ i, ch: input[i] });
+            if (input[i] === " ") {
+                if (ttt.map(c => c.ch).join("").includes("SELECT")) {
+                    isSelect = true;
+                }
+                if (ttt.map(c => c.ch).join("").includes("FROM")) {
+                    isSelect = false;
+                }
+
+                ttt = [];
+            }
+            if (i === num) {
+                if (isSelect && ttt.length) {
+                    ttt = { start: ttt[0].i, finish: i }
+                } else {
+                    ttt = {};
+                }
+                break
+            }
+        }
+        if (ttt.start) {
+            input.splice(ttt.finish + 2, 0, ')')
+            input.splice(ttt.start, 0, 'curr(');
+        }
+        input = input.join("").split("\n").join(" ").split(",").join(" ").trim()
             .split("(").join(" ( ")
             .split(")").join(" ) ")
             .split(" ")
@@ -305,7 +334,7 @@ class Query {
         return t
     }
 }
-function getObject(input) {
+function getObject(input, num) {
     let q = new Query();
-    return (Query.build(input))
+    return (Query.build(input, num))
 }
