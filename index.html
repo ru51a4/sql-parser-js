@@ -47,7 +47,7 @@ ORDER BY gg.kek desc</textarea>
     let sql = document.querySelector('#sql');
     let main = document.querySelector('.main');
     let mainfn = (num) => {
-        let obj = getObject(`( ${sql.value} )`, num);
+        let obj = getObject(` ${sql.value} `, num);
         console.log(obj)
         let getHtml = (obj, init = false, type = 1) => {
             if (!obj) {

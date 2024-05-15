@@ -34,10 +34,10 @@ class Query {
             }
         }
         if (ttt.start) {
-            input.splice(ttt.finish + 2, 0, ')')
+            input.splice(ttt.finish + 1, 0, ')')
             input.splice(ttt.start, 0, 'curr(');
         }
-        input = input.join("").split("\n").join(" ").split(",").join(" ").trim()
+        input = `( ${input} )`.join("").split("\n").join(" ").split(",").join(" ").trim()
             .split("(").join(" ( ")
             .split(")").join(" ) ")
             .split(" ")
