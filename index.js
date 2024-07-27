@@ -59,7 +59,7 @@ class SqlParserJsQuery {
             .filter(c => !!c).map((s) => s.toUpperCase())
 
         let lex = (str) => {
-            let query = new Query();
+            let query = new SqlParserJsQuery();
             let isColumns = false;
             let isFromSources = false;
             let isJoin = false;
@@ -306,9 +306,7 @@ class SqlParserJsQuery {
             }
 
         }
-        console.log({ "input": JSON.parse(JSON.stringify(input)) })
         nested(input);
-        console.log({ "t": JSON.parse(JSON.stringify(t)) })
 
         let calc = (c) => {
             let type = stack[stack.length - 1] ?? 'SELECT'

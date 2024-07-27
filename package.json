@@ -1,5 +1,5 @@
 {
-  "name": "sql-parser-js",
+  "name": "simple-sql-parser-js",
   "version": "1.0.0",
   "description": "simple sql parser",
   "main": "index.js",
