@@ -1,4 +1,4 @@
-class SqlParserJsQuery {
+class Query {
     columns = [];
     fromSources = [];
     joins = [];
@@ -349,4 +349,7 @@ class SqlParserJsQuery {
         return t
     }
 }
-module.exports = SqlParserJsQuery;
+function getObject(input, num) {
+    let q = new Query();
+    return (Query.build(input, num))
+}
