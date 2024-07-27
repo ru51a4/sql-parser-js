@@ -1,0 +1,24 @@
+{
+  "name": "sql-parser-js",
+  "version": "1.0.0",
+  "description": "simple sql parser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ru51a4/sql-parser-js.git"
+  },
+  "keywords": [
+    "sql",
+    "parser",
+    "sql"
+  ],
+  "author": "ru51a4",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ru51a4/sql-parser-js/issues"
+  },
+  "homepage": "https://github.com/ru51a4/sql-parser-js#readme"
+}

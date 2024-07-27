@@ -115,7 +115,7 @@ ORDER BY gg.kek desc</textarea>
                 </div>
                                 `;
     }
-    sql.addEventListener('keyup', () => {
+    var m = () => {
 
         try {
             num = $('textarea').prop("selectionStart");
@@ -133,7 +133,17 @@ ORDER BY gg.kek desc</textarea>
                 `;
 
         }
-    }, false);
+    };
+    sql.addEventListener('keypress', m); // Every character written
+    sql.addEventListener('mousedown', m); // Click down
+    sql.addEventListener('touchstart', m); // Mobile
+    sql.addEventListener('input', m); // Other input events
+    sql.addEventListener('paste', m); // Clipboard actions
+    sql.addEventListener('cut', m);
+    sql.addEventListener('mousemove', m); // Selection, dragging text
+    sql.addEventListener('select', m); // Some browsers support this event
+    sql.addEventListener('selectstart', m); // Some browsers support this event
+
     document.addEventListener("DOMContentLoaded", mainfn());
 
 
