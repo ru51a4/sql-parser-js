@@ -1,6 +1,6 @@
 {
   "name": "simple-sql-parser-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "simple sql parser",
   "main": "index.js",
   "scripts": {
@@ -12,8 +12,14 @@
   },
   "keywords": [
     "sql",
+    "sql-parser",
     "parser",
-    "sql"
+    "node",
+    "nodejs",
+    "node-parser",
+    "node-sql-parser",
+    "ast",
+    "sql-ast"
   ],
   "author": "ru51a4",
   "license": "ISC",
