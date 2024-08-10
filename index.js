@@ -1,4 +1,4 @@
-class SqlParserJsQuery {
+class Query {
     columns = [];
     fromSources = [];
     joins = [];
@@ -7,12 +7,14 @@ class SqlParserJsQuery {
     groupByColumns = [];
     sortColumns = [];
     limit = []
+}
+class SimpleSqlParserJs {
     static build = (input, num) => {
         input = input.split("").map((c) => c.toUpperCase());
-        console.log({ num });
         let ttt = []
         let _ttt = [];
         let isSelect = false;
+        /*
         for (let i = 0; i <= input.length - 1; i++) {
             ttt.push({ i, ch: input[i] });
             if (input[i] === " ") {
@@ -52,6 +54,7 @@ class SqlParserJsQuery {
             input.splice(_ttt.finish + 1, 0, ')')
             input.splice(_ttt.start, 0, 'curr(');
         }
+        */
         input = `( ${input.join("")} )`.split("\n").join(" ").split(",").join(" ").trim()
             .split("(").join(" ( ")
             .split(")").join(" ) ")
@@ -59,7 +62,7 @@ class SqlParserJsQuery {
             .filter(c => !!c).map((s) => s.toUpperCase())
 
         let lex = (str) => {
-            let query = new SqlParserJsQuery();
+            let query = new Query();
             let isColumns = false;
             let isFromSources = false;
             let isJoin = false;
@@ -347,4 +350,4 @@ class SqlParserJsQuery {
         return t
     }
 }
-module.exports = SqlParserJsQuery;
+module.exports = SimpleSqlParserJs;
