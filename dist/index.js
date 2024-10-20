@@ -12,6 +12,7 @@ class Query {
         console.log({ num });
         let ttt = []
         let _ttt = [];
+        /*
         let isSelect = false;
         for (let i = 0; i <= input.length - 1; i++) {
             ttt.push({ i, ch: input[i] });
@@ -52,6 +53,7 @@ class Query {
             input.splice(_ttt.finish + 1, 0, ')')
             input.splice(_ttt.start, 0, 'curr(');
         }
+        */
         input = `( ${input.join("")} )`.split("\n").join(" ").split(",").join(" ").trim()
             .split("(").join(" ( ")
             .split(")").join(" ) ")
