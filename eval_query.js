@@ -20,6 +20,12 @@ class mysql {
                 [1, "admin", 1],
                 [2, "user", 2],
             ]
+        },
+        "DIARY": {
+            col: ["ID", "NAME", "USER_ID"],
+            data: [
+                [1, "php и рефлексия", 1],
+            ]
         }
     };
     static query(str) {
@@ -52,6 +58,7 @@ class mysql {
                 let ja = _query.joins[j].alias;
 
                 aliasTable[ja] = jt;
+                let jjj = [];
                 for (let jj = 0; jj <= mysql.table[jt].data.length - 1; jj++) {
                     //
                     let left = _query.joins[j].exp[0].left.split(".");
@@ -63,9 +70,9 @@ class mysql {
 
                     if (operation['='](j_table_left.data[i][iLeft], j_table_right.data[jj][iRight])) {
                         let currJoinRow = mysql.getObj(jt, jj, ja);
-                        let _row = JSON.parse(JSON.stringify(row));
+                        let _row = rrow[i] ? rrow[i] : JSON.parse(JSON.stringify(row));
                         mysql.mergeObj(_row, currJoinRow)
-                        rrow.push(_row);
+                        rrow[i] = (_row);
                     }
                 }
             }
@@ -105,4 +112,9 @@ class mysql {
         return obj;
     }
 }
-console.log(mysql.query('SELECT * FROM posts p JOIN users u ON p.user_id = u.id where u.status = 1 AND p.id = 1')) 
+console.log(mysql.query(`
+SELECT * FROM posts p 
+JOIN users u ON p.user_id = u.id
+JOIN diary d ON p.diary_id = d.id
+WHERE u.id = 2
+`)) 
