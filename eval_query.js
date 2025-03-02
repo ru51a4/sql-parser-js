@@ -10,14 +10,15 @@ class mysql {
                 [3, "hello world2", 1, 1],
                 [4, "hello world3", 1, 1],
                 [50, "hello world4", 1, 1],
+                [51, "kek", 2, 1],
 
             ],
         },
         "USERS": {
             col: ["ID", "LOGIN", "STATUS"],
             data: [
-                [1, "admin", 2],
-                [1, "user", 1],
+                [1, "admin", 1],
+                [2, "user", 2],
             ]
         }
     };
@@ -41,6 +42,7 @@ class mysql {
         aliasTable[_query.fromSources[0].alias] = _query.fromSources[0].table;
 
         for (let i = 0; i <= mysql.table[_query.fromSources[0].table].data.length - 1; i++) {
+            let rrow = [];
             let f = true;
             let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias);
             //join
@@ -51,34 +53,43 @@ class mysql {
 
                 aliasTable[ja] = jt;
                 for (let jj = 0; jj <= mysql.table[jt].data.length - 1; jj++) {
-                    //todo
-                    let currJoinRow = mysql.getObj(jt, j, ja);
-                    mysql.megeObj(row, currJoinRow);
-                    break;
+                    //
+                    let left = _query.joins[j].exp[0].left.split(".");
+                    let right = _query.joins[j].exp[0].right.split(".");
+                    let j_table_left = mysql.table[aliasTable[left[0]]];
+                    let j_table_right = mysql.table[aliasTable[right[0]]];
+                    let iLeft = j_table_left.col.indexOf(left[1])
+                    let iRight = j_table_left.col.indexOf(right[1])
+
+                    if (operation['='](j_table_left.data[i][iLeft], j_table_right.data[jj][iRight])) {
+                        let currJoinRow = mysql.getObj(jt, jj, ja);
+                        let _row = JSON.parse(JSON.stringify(row));
+                        mysql.mergeObj(_row, currJoinRow)
+                        rrow.push(_row);
+                    }
                 }
             }
+            if (!rrow.length) {
+                rrow.push(row);
+            }
+            rrow = rrow.filter((el) => {
+                for (let j = 0; j <= _query.whereClauses.length - 1; j++) {
+                    let left = _query.whereClauses[j].left;
+                    left = el[left];
+                    let right = _query.whereClauses[j].right;
+                    if (!operation[_query.whereClauses[j].type](left, right)) {
+                        return 0;
+                    }
+                }
+                return 1;
+            });
             //
-            for (let j = 0; j <= _query.whereClauses.length - 1; j++) {
-                let left = _query.whereClauses[j].left.split(".");
-                let numLeft = mysql.table[aliasTable[_query.fromSources[0].alias]].col.indexOf(left[1])
-
-                left = mysql.table[aliasTable[_query.fromSources[0].alias]].data[i][numLeft];
-
-                let right = _query.whereClauses[j].right;
-
-                if (!operation[_query.whereClauses[j].type](left, right)) {
-                    f = false;
-                    break;
-                }
-            }
-            if (f) {
-                res.push(row)
-            }
+            res.push(...rrow);
         }
         return (res)
     }
 
-    static megeObj(obj, obj2) {
+    static mergeObj(obj, obj2) {
 
         Object.keys(obj2).forEach((key) => {
             obj[key] = obj2[key];
@@ -94,4 +105,4 @@ class mysql {
         return obj;
     }
 }
-console.log(mysql.query('SELECT * FROM posts p JOIN users u ON p.user_id = u.id where p.id = 2'))
+console.log(mysql.query('SELECT * FROM posts p JOIN users u ON p.user_id = u.id where u.status = 1 AND p.id = 1')) 
