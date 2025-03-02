@@ -66,8 +66,7 @@ class mysql {
                     let j_table_left = mysql.table[aliasTable[left[0]]];
                     let j_table_right = mysql.table[aliasTable[right[0]]];
                     let iLeft = j_table_left.col.indexOf(left[1])
-                    let iRight = j_table_left.col.indexOf(right[1])
-
+                    let iRight = j_table_right.col.indexOf(right[1])
                     if (operation['='](j_table_left.data[i][iLeft], j_table_right.data[jj][iRight])) {
                         let currJoinRow = mysql.getObj(jt, jj, ja);
                         let _row = rrow[i] ? rrow[i] : JSON.parse(JSON.stringify(row));
@@ -113,7 +112,7 @@ class mysql {
     }
 }
 console.log(mysql.query(`
-SELECT * FROM posts p 
+SELECT * FROM posts p  
 JOIN users u ON p.user_id = u.id
 JOIN diary d ON p.diary_id = d.id
 WHERE u.id = 2
