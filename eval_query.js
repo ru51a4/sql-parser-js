@@ -29,6 +29,9 @@ class mysql {
         },
     };
     static query(str) {
+        return mysql._query(SimpleSqlParserJs.build(str)[0]);
+    }
+    static _query(tt) {
         let operation = [];
         operation["<"] = (a, b) => {
             return a < b;
@@ -42,7 +45,7 @@ class mysql {
         operation["<>"] = (a, b) => {
             return a != b;
         }
-        let _query = SimpleSqlParserJs.build(str)[0];
+        let _query = tt;
         let res = [];
         let aliasTable = [];
         aliasTable[_query.fromSources[0].alias] = _query.fromSources[0].table;
@@ -54,7 +57,15 @@ class mysql {
                 let jt = _query.joins[j].table
                 let ja = _query.joins[j].alias;
 
-                aliasTable[ja] = jt;
+                if (typeof _query.joins[j].table === "object") {
+                    mysql.table[ja] = {};
+                    mysql.table[ja].col = mysql.table[_query.joins[j].table.fromSources[0].table].col
+                    mysql.table[ja].data = mysql._query(_query.joins[j].table).map((c) => Object.values(c));
+                    aliasTable[ja] = ja;
+                    jt = ja;
+                } else {
+                    aliasTable[ja] = jt;
+                }
                 let jjj = [];
                 for (let jj = 0; jj <= mysql.table[jt].data.length - 1; jj++) {
                     //
@@ -122,7 +133,7 @@ class mysql {
 }
 console.log(mysql.query(`
 SELECT * FROM posts p  
-JOIN users u ON p.user_id = u.id
+JOIN (SELECT * FROM users u where u.id = 2) uu ON p.user_id = uu.id
 JOIN diary d ON p.diary_id = d.id
-WHERE u.id = 2
+WHERE uu.id = 2
 `)) 
