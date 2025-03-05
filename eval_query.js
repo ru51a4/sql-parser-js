@@ -27,6 +27,14 @@ class mysql {
                 [1, "php и рефлексия join test", 1],
             ]
         },
+        "STATUS": {
+            col: ["ID", "NAME"],
+            data: [
+                ['1', 'administartor'],
+                ['2', 'moderator'],
+                ['3', 'user']
+            ]
+        }
     };
     static query(str) {
         return mysql._query(SimpleSqlParserJs.build(str)[0]);
@@ -59,8 +67,9 @@ class mysql {
 
                 if (typeof _query.joins[j].table === "object") {
                     mysql.table[ja] = {};
-                    mysql.table[ja].col = mysql.table[_query.joins[j].table.fromSources[0].table].col
-                    mysql.table[ja].data = mysql._query(_query.joins[j].table).map((c) => Object.values(c));
+                    let subquery = mysql._query(_query.joins[j].table);
+                    mysql.table[ja].col = Object.keys(subquery[0]).map(c => c.split(".")[1]);
+                    mysql.table[ja].data = subquery.map((c) => Object.values(c));
                     aliasTable[ja] = ja;
                     jt = ja;
                 } else {
@@ -133,7 +142,7 @@ class mysql {
 }
 console.log(mysql.query(`
 SELECT * FROM posts p  
-JOIN (SELECT * FROM users u where u.id = 2) uu ON p.user_id = uu.id
+JOIN (SELECT * FROM users u JOIN status s on u.status = s.id where s.id = 2) uu ON p.user_id = uu.id
 JOIN diary d ON p.diary_id = d.id
 WHERE uu.id = 2
 `)) 
