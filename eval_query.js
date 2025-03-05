@@ -11,7 +11,6 @@ class mysql {
                 [4, "hello world3", 1, 1],
                 [50, "hello world4", 1, 1],
                 [51, "kek", 2, 1],
-
             ],
         },
         "USERS": {
@@ -49,7 +48,7 @@ class mysql {
         aliasTable[_query.fromSources[0].alias] = _query.fromSources[0].table;
         let rrow = [];
 
-        let join = (row, jj, qq) => {
+        let join = (row, jj) => {
             for (let j = jj; j <= jj; j++) {
                 let jf = true;
                 let jt = _query.joins[j].table
@@ -61,9 +60,7 @@ class mysql {
                     //
                     let left = _query.joins[j].exp[0].left.split(".");
                     let right = _query.joins[j].exp[0].right.split(".");
-                    let j_table_left = mysql.table[aliasTable[left[0]]];
                     let j_table_right = mysql.table[aliasTable[right[0]]];
-                    let iLeft = j_table_left.col.indexOf(left[1])
                     let iRight = j_table_right.col.indexOf(right[1])
                     if (operation['='](row[left[0] + '.' + left[1]], j_table_right.data[jj][iRight])) {
                         let currJoinRow = mysql.getObj(jt, jj, ja);
@@ -72,7 +69,7 @@ class mysql {
                         if (_query.joins.length - 1 == j) {
                             rrow.push(__row);
                         } else if (_query.joins.length - 1 <= j + 1) {
-                            (join(__row, j + 1, qq))
+                            join(__row, j + 1)
                         }
                     }
                 }
@@ -82,6 +79,7 @@ class mysql {
         for (let i = 0; i <= mysql.table[_query.fromSources[0].table].data.length - 1; i++) {
             let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias);
             //join
+            rrow = [];
             join(row, 0, i)
             /*
             if (!rrow.length) {
