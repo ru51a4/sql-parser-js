@@ -80,12 +80,13 @@ class mysql {
             let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias);
             //join
             rrow = [];
-            join(row, 0, i)
-            /*
-            if (!rrow.length) {
+            if (_query.joins.length) {
+                join(row, 0, i)
+            }
+            else {
                 rrow.push(row);
             }
-            */
+
             rrow = rrow.filter((el) => {
                 for (let j = 0; j <= _query.whereClauses.length - 1; j++) {
                     let left = _query.whereClauses[j].left;
