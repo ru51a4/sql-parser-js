@@ -25,8 +25,9 @@ class mysql {
             col: ["ID", "NAME", "USER_ID"],
             data: [
                 [1, "php и рефлексия", 1],
+                [1, "php и рефлексия join test", 1],
             ]
-        }
+        },
     };
     static query(str) {
         let operation = [];
@@ -46,13 +47,10 @@ class mysql {
         let res = [];
         let aliasTable = [];
         aliasTable[_query.fromSources[0].alias] = _query.fromSources[0].table;
+        let rrow = [];
 
-        for (let i = 0; i <= mysql.table[_query.fromSources[0].table].data.length - 1; i++) {
-            let rrow = [];
-            let f = true;
-            let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias);
-            //join
-            for (let j = 0; j <= _query.joins.length - 1; j++) {
+        let join = (row, jj, qq) => {
+            for (let j = jj; j <= jj; j++) {
                 let jf = true;
                 let jt = _query.joins[j].table
                 let ja = _query.joins[j].alias;
@@ -67,17 +65,29 @@ class mysql {
                     let j_table_right = mysql.table[aliasTable[right[0]]];
                     let iLeft = j_table_left.col.indexOf(left[1])
                     let iRight = j_table_right.col.indexOf(right[1])
-                    if (operation['='](j_table_left.data[i][iLeft], j_table_right.data[jj][iRight])) {
+                    if (operation['='](row[left[0] + '.' + left[1]], j_table_right.data[jj][iRight])) {
                         let currJoinRow = mysql.getObj(jt, jj, ja);
-                        let _row = rrow[i] ? rrow[i] : JSON.parse(JSON.stringify(row));
-                        mysql.mergeObj(_row, currJoinRow)
-                        rrow[i] = (_row);
+                        let __row = JSON.parse(JSON.stringify(row));
+                        mysql.mergeObj(__row, currJoinRow)
+                        if (_query.joins.length - 1 == j) {
+                            rrow.push(__row);
+                        } else if (_query.joins.length - 1 <= j + 1) {
+                            (join(__row, j + 1, qq))
+                        }
                     }
                 }
             }
+        }
+
+        for (let i = 0; i <= mysql.table[_query.fromSources[0].table].data.length - 1; i++) {
+            let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias);
+            //join
+            join(row, 0, i)
+            /*
             if (!rrow.length) {
                 rrow.push(row);
             }
+            */
             rrow = rrow.filter((el) => {
                 for (let j = 0; j <= _query.whereClauses.length - 1; j++) {
                     let left = _query.whereClauses[j].left;
