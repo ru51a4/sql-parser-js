@@ -5,37 +5,28 @@ class mysql {
         "POSTS": {
             col: ['ID', 'MSG', 'USER_ID', 'DIARY_ID'],
             data: [
-                [1, "hello world", 1, 1],
-                [2, "hello world1", 1, 1],
-                [3, "hello world2", 1, 1],
-                [4, "hello world3", 1, 1],
-                [50, "hello world4", 1, 1],
-                [51, "kek", 2, 1],
+                [1, "Мой блог о php", 1, 1],
+                [2, "Как дела?", 2, 1],
+                [3, "Мой уютный блог обо всем на свете", 2, 2],
+                [4, "Сегодня хорошая погода", 2, 2],
             ],
         },
         "USERS": {
             col: ["ID", "LOGIN", "STATUS"],
             data: [
                 [1, "admin", 1],
-                [2, "user", 2],
+                [2, "user", 3],
             ]
         },
         "DIARY": {
             col: ["ID", "NAME", "USER_ID"],
             data: [
-                [1, "php и рефлексия", 1],
-                [1, "php и рефлексия join test", 1],
-            ]
-        },
-        "STATUS": {
-            col: ["ID", "NAME"],
-            data: [
-                ['1', 'administartor'],
-                ['2', 'moderator'],
-                ['3', 'user']
+                [1, "php и рефлексия", 2],
+                [2, "уютный бложик", 1],
             ]
         }
     };
+
     static query(str) {
         return mysql._query(SimpleSqlParserJs.build(str)[0]);
     }
@@ -106,7 +97,6 @@ class mysql {
             else {
                 rrow.push(row);
             }
-
             rrow = rrow.filter((el) => {
                 for (let j = 0; j <= _query.whereClauses.length - 1; j++) {
                     let left = _query.whereClauses[j].left;
@@ -121,6 +111,52 @@ class mysql {
             //
             res.push(...rrow);
         }
+        //group by
+        if (_query.groupByColumns.length) {
+            let grrow = [];
+            //
+            let selects = [];
+            let maxCol = null;
+            let countCol = null;
+            _query.columns.forEach((c) => {
+                if (c.col.fn === "MAX") {
+                    maxCol = c.col.args[0]
+                }
+                if (c.col.fn === "COUNT(*)") {
+                    countCol = true;
+                }
+            });
+            //
+            for (let i = 0; i <= _query.groupByColumns.length - 1; i++) {
+                for (let j = 0; j <= res.length - 1; j++) {
+                    if (!grrow[res[j][_query.groupByColumns[i].col]]) {
+                        grrow[res[j][_query.groupByColumns[i].col]] = [];
+                    }
+                    grrow[res[j][_query.groupByColumns[i].col]].push(res[j]);
+                }
+            }
+            res = [...grrow.filter((c) => c)];
+            for (let i = 0; i <= res.length - 1; i++) {
+                let length = res[i].length;
+                if (maxCol) {
+                    res[i] = res[i].sort((b, a) => a[maxCol] - b[maxCol])[0]
+                    res[i]['_.COUNT'] = length;
+                } else {
+                    res[i] = res[i][res[i].length - 1]
+                    res[i]['_.COUNT'] = length;
+                }
+            }
+        }
+
+        //ORDER BY
+        if (_query.sortColumns.length) {
+            if (_query.sortColumns[0].type == "DESC") {
+                res = res.sort((b, a) => a[_query.sortColumns[0].col] - b[_query.sortColumns[0].col])
+            } else {
+                res = res.sort((a, b) => a[_query.sortColumns[0].col] - b[_query.sortColumns[0].col])
+            }
+        }
+
         return (res)
     }
 
@@ -140,9 +176,31 @@ class mysql {
         return obj;
     }
 }
-console.log(mysql.query(`
-SELECT * FROM posts p  
-JOIN (SELECT * FROM users u JOIN status s on u.status = s.id where s.id = 2) uu ON p.user_id = uu.id
-JOIN diary d ON p.diary_id = d.id
-WHERE uu.id = 2
-`)) 
+
+
+//index
+let sortedBlogs = mysql.query(`
+        SELECT * FROM diary d 
+        JOIN (SELECT p.diary_id, max(p.id) FROM posts p GROUP BY p.diary_id) pp on d.id = pp.diary_id
+        JOIN users u on d.user_id = u.id
+        ORDER BY pp.id DESC
+    `);
+console.log("=================")
+sortedBlogs.forEach((blog) => {
+    console.log(`# ${blog['D.ID']} ${blog['D.NAME']} [by ${blog["U.LOGIN"]}]`)
+});
+console.log("=================")
+//posts diary_id = 1
+let blog1 = mysql.query(`
+        SELECT * FROM posts p
+        JOIN diary d on p.diary_id = d.id 
+        JOIN users u on p.user_id = u.id
+        WHERE d.id = 1
+        ORDER BY p.id ASC
+    `);
+console.log("")
+console.log(`======START:${blog1[0]["D.NAME"]}======`)
+blog1.forEach((el) => {
+    console.log(`#${el['P.ID']} ${el['P.MSG']} [by ${el['U.LOGIN']}]`)
+});
+console.log(`======END:${blog1[0]["D.NAME"]}======`)
