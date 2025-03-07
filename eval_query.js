@@ -74,11 +74,12 @@ class mysql {
                     let j_table_right = mysql.table[aliasTable[right[0]]];
                     let iRight = j_table_right.col.indexOf(right[1])
                     if (operation['='](row[left[0] + '.' + left[1]], j_table_right.data[jj][iRight])) {
-                        let currJoinRow = mysql.getObj(jt, jj, ja);
+                        let currJoinRow = mysql.getObj(jt, jj, ja, _query.columns);
                         let __row = JSON.parse(JSON.stringify(row));
                         mysql.mergeObj(__row, currJoinRow)
                         if (_query.joins.length - 1 == j) {
                             rrow.push(__row);
+                            rrow.alias = ja
                         } else if (_query.joins.length - 1 <= j + 1) {
                             join(__row, j + 1)
                         }
@@ -88,7 +89,7 @@ class mysql {
         }
 
         for (let i = 0; i <= mysql.table[_query.fromSources[0].table].data.length - 1; i++) {
-            let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias);
+            let row = mysql.getObj(_query.fromSources[0].table, i, _query.fromSources[0].alias, _query.columns);
             //join
             rrow = [];
             if (_query.joins.length) {
@@ -120,7 +121,7 @@ class mysql {
             let countCol = null;
             _query.columns.forEach((c) => {
                 if (c.col.fn === "MAX") {
-                    maxCol = c.col.args[0]
+                    maxCol = c.alias ? '_.' + c.alias : c.col.args[0]
                 }
                 if (c.col.fn === "COUNT(*)") {
                     countCol = true;
@@ -161,17 +162,31 @@ class mysql {
     }
 
     static mergeObj(obj, obj2) {
-
         Object.keys(obj2).forEach((key) => {
             obj[key] = obj2[key];
         })
     }
 
-    static getObj(table, j, alias) {
+    static getObj(table, j, alias, columns) {
         let obj = {};
         let r = mysql.table[table];
         for (let i = 0; i <= r.col.length - 1; i++) {
-            obj[alias ? alias + '.' + r.col[i] : "" + r.col[i]] = r.data[j][i];
+            let _col = alias ? alias + '.' + r.col[i] : "" + r.col[i];
+            for (let j = 0; j <= columns.length - 1; j++) {
+
+                let getCol = (obj) => {
+                    if (obj.col.args) {
+                        return obj.col.args[0];
+                    }
+                    return obj.col
+                };
+
+                if (columns[j]?.alias && getCol(columns[j]) == alias + '.' + r.col[i]) {
+                    _col = "_" + '.' + columns[j].alias;
+                    break
+                }
+            }
+            obj[_col] = r.data[j][i];
         }
         return obj;
     }
@@ -181,13 +196,15 @@ class mysql {
 //index
 let sortedBlogs = mysql.query(`
         SELECT * FROM diary d 
-        JOIN (SELECT p.diary_id, max(p.id) FROM posts p GROUP BY p.diary_id) pp on d.id = pp.diary_id
+        JOIN (SELECT p.diary_id, max(p.id) as pid FROM posts p JOIN users u ON p.user_id = u.id GROUP BY p.diary_id) pp on d.id = pp.diary_id
         JOIN users u on d.user_id = u.id
-        ORDER BY pp.id DESC
+        ORDER BY pp.pid DESC
     `);
 console.log("=================")
 sortedBlogs.forEach((blog) => {
     console.log(`# ${blog['D.ID']} ${blog['D.NAME']} [by ${blog["U.LOGIN"]}]`)
+    console.log(`>> ${blog['PP.PID']} ${blog['PP.MSG']} [by ${blog["PP.LOGIN"]}]`)
+
 });
 console.log("=================")
 //posts diary_id = 1
@@ -203,4 +220,3 @@ console.log(`======START:${blog1[0]["D.NAME"]}======`)
 blog1.forEach((el) => {
     console.log(`#${el['P.ID']} ${el['P.MSG']} [by ${el['U.LOGIN']}]`)
 });
-console.log(`======END:${blog1[0]["D.NAME"]}======`)
